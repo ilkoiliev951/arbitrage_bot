@@ -1,8 +1,6 @@
 require('dotenv').config();
-import "hardhat-deploy";
-import "@nomiclabs/hardhat-ethers";
-import "./scripts/custom-tasks/customDeploy";
-import "@nomicfoundation/hardhat-toolbox";
+require("hardhat-deploy");
+require("@nomiclabs/hardhat-ethers");
 
 module.exports = {
     defaultNetwork: "mainnet",
@@ -22,10 +20,5 @@ module.exports = {
                 runs: 200
             }
         }
-    },
-    paths: {
-        sources: "./contracts",
-        cache: "./cache",
-        artifacts: "./artifacts"
     }
 }

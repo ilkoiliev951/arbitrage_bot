@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity >=0.4.21 <0.7.0;
 
 import './IUniswapV2Router01.sol';
 

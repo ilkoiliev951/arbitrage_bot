@@ -5,6 +5,8 @@ const abis = require('./abis');
 const { mainnet: addresses } = require('./addresses');
 const Flashloan = require('./build/contracts/Flashloan.json');
 
+const WALLET_PK_ADDRESS = '0xbdadc707e33445d8193f469537f6970Ce085df71';
+
 const web3 = new Web3(
   new Web3.providers.WebsocketProvider(process.env.INFURA_URL)
 );
@@ -16,11 +18,23 @@ const kyber = new web3.eth.Contract(
 );
 
 const ONE_WEI = web3.utils.toBN(web3.utils.toWei('1'));
-const AMOUNT_DAI_WEI = web3.utils.toBN(web3.utils.toWei('20000'));
+// the amount to trade
+const AMOUNT_DAI_WEI = web3.utils.toBN(web3.utils.toWei('10147133434'));
 const DIRECTION = {
   KYBER_TO_UNISWAP: 0,
   UNISWAP_TO_KYBER: 1
 };
+
+// Function to get the wallet balance and convert to USD
+async function getBalance() {
+    try {
+        const balanceWei = await web3.eth.getBalance(WALLET_PK_ADDRESS);
+        console.log(`Wallet Balance: ${balanceWei} ETH`);
+        return balanceWei;
+    } catch (error) {
+        console.error('Error: ', error);
+    }
+}
 
 const init = async () => {
   const networkId = await web3.eth.net.getId();
@@ -98,15 +112,17 @@ const init = async () => {
           AMOUNT_DAI_WEI,
           DIRECTION.KYBER_TO_UNISWAP
         );
-        const [gasPrice, gasCost] = await Promise.all([
+        const [gasPrice, gasLimit] = await Promise.all([
           web3.eth.getGasPrice(),
           tx.estimateGas({from: admin}),
         ]);
 
-        const txCost = web3.utils.toBN(gasCost).mul(web3.utils.toBN(gasPrice)).mul(ethPrice);
+        const txCostInWei = web3.utils.toBN(gasLimit).mul(web3.utils.toBN(gasPrice));
+        const txCost = txCostInWei.mul(ethPrice);
         const profit = daiFromUniswap.sub(AMOUNT_DAI_WEI).sub(txCost);
 
-        if(profit > 0) {
+        if(profit > 0 && txCostInWei < await getBalance()) {
+          // get balance in wei > than the
           console.log('Arb opportunity found Kyber -> Uniswap!');
           console.log(`Expected profit: ${web3.utils.fromWei(profit)} Dai`);
           const data = tx.encodeABI();
@@ -114,7 +130,7 @@ const init = async () => {
             from: admin,
             to: flashloan.options.address,
             data,
-            gas: gasCost,
+            gas: gasLimit,
             gasPrice
           };
           const receipt = await web3.eth.sendTransaction(txData);
@@ -133,10 +149,12 @@ const init = async () => {
           web3.eth.getGasPrice(),
           tx.estimateGas({from: admin}),
         ]);
-        const txCost = web3.utils.toBN(gasCost).mul(web3.utils.toBN(gasPrice)).mul(ethPrice);
+
+        const txCostInWei = web3.utils.toBN(gasLimit).mul(web3.utils.toBN(gasPrice));
+        const txCost = txCostInWei.mul(ethPrice);
         const profit = daiFromKyber.sub(AMOUNT_DAI_WEI).sub(txCost);
 
-        if(profit > 0) {
+        if(profit > 0 && txCostInWei < await getBalance()) {
           console.log('Arb opportunity found Uniswap -> Kyber!');
           console.log(`Expected profit: ${web3.utils.fromWei(profit)} Dai`);
           const data = tx.encodeABI();

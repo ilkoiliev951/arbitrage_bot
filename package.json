@@ -1,7 +1,7 @@
 {
-  "name": "10-connect-to-blockchain-with-web3",
+  "name": "arbitrage_bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "arbitrage_bot",
   "main": "run-arbitrage.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,13 +10,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.5",
+    "@openzeppelin/contracts": "^4.8.3",
     "@studydefi/money-legos": "^2.3.3",
     "@truffle/hdwallet-provider": "^1.0.35",
     "@uniswap/sdk": "^2.0.5",
     "dotenv": "^8.2.0",
-    "web3": "^1.2.9"
+    "hardhat-deploy": "^0.11.29",
+    "web3": "^1.2.9",
+    "ethers": "^5.7.2"
   },
   "engines": {
-    "node": "12.x"
+    "node": "19.x"
+  },
+  "devDependencies": {
+    "hardhat": "^2.17.2"
   }
 }
